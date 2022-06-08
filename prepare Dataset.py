@@ -44,7 +44,7 @@ print(export)
 #export = export.drop_duplicates(keep=False)
 
 # Datensatz durchmischen
-export = export.sample(frac=1)
+#export = export.sample(frac=1)
 
 # Datensatz in X und Y Anteile aufteilen
 exportX = export.drop('Real PartNo', axis=1)
