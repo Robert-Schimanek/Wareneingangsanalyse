@@ -3,7 +3,7 @@ from joblib import load
 import numpy as np
 import pandas as pd
 
-#TODO: Datensatz muss noch nach Datum sortiert werden
+#TODO: Datensatz muss noch nach Datum sortiert werden und danach mischen entfernen
 
 #CSV Dateien einlesen
 dataset = load('C:/Users/gezer/Desktop/Wareneingangsanalyse/tidydataframe.sav')
@@ -30,6 +30,9 @@ for i in list:
     export = pd.concat([export,filtered])
 export.drop(export.index[[0]], inplace=True)
 print(export)
+
+# Datensatz durchmischen
+export = export.sample(frac=1)
 
 # Datensatz in X und Y Anteile aufteilen
 exportX = export.drop('Real PartNo', axis=1)

@@ -24,8 +24,8 @@ import time
 start_time = time.time()
 
 # Datensatz laden
-datasetX = pd.read_csv('C:/Users/gezer/Desktop/DatasetX.csv', low_memory=False); #print(datasetX.head(10));  print(datasetX.dtypes)
-datasetY = pd.read_csv('C:/Users/gezer/Desktop/DatasetY.csv', low_memory=False); #print(datasetY.head(10));  print(datasetY.dtypes)
+datasetX = pd.read_csv('C:/Users/gezer/Desktop/Wareneingangsanalyse/DatasetX.csv', low_memory=False); #print(datasetX.head(10));  print(datasetX.dtypes)
+datasetY = pd.read_csv('C:/Users/gezer/Desktop/Wareneingangsanalyse/DatasetY.csv', low_memory=False); #print(datasetY.head(10));  print(datasetY.dtypes)
 
 # Encoder initialisieren
 OE = preprocessing.OrdinalEncoder()
@@ -46,7 +46,7 @@ dataframe = pd.concat([dfX,dfY], axis=1)
 dataframe.to_csv('C:/Users/gezer/Desktop/neu.csv', index = 0)
 
 # Datenframe in ein Stream umwandeln
-stream=DataStream(dataframe, target_idx=11)
+stream=DataStream(dataframe, target_idx=7)
 
 # Fehlende informationen mit '0' fuellen
 #cleaner = MissingValuesCleaner(0)
@@ -63,17 +63,17 @@ KNN = KNNClassifier()
 #SGD.fit(datasetX,datasetY.values.ravel())
 #print(SGD.score(datasetX, datasetY))
 
-model = EFDT
+model = NB
 
 
 # BATCHLEARNING (IN ECHT AUCH INKREMENTELL ABER PSCHT)
 #-------------------------------------------------------------------------------------------------------------------------------------------
-''' 
+#''' 
 # Variablen fuer die Iteration
 k=0
 n_samples = 0
 correct_cnt = 0
-max_samples = 1000
+max_samples = 10000
 i_pred= np.empty([max_samples], dtype=int);     #print(i_pred)
 i= np.empty([max_samples], dtype=int);          #print(i)
 
@@ -100,7 +100,7 @@ print('--------------------')
 k=0
 IL_samples = 0
 IL_correct_cnt = 0
-IL_max_samples = 100
+IL_max_samples = 1000
 IL_pred = np.empty([IL_max_samples], dtype=int)
 IL = np.empty([IL_max_samples], dtype=int)
 
@@ -201,7 +201,7 @@ ax.set_xticks(xticks)
 ax.set_xticklabels(dict1.keys())
 ax.legend(frameon=False)
 plt.show()
-'''
+#'''
 #-------------------------------------------------------------------------------------------------------------------------------------------
 
 '''
@@ -222,7 +222,7 @@ invNo.to_csv('C:/Users/gezer/Desktop/results.csv', index = 0); #print(inv)
 
 # Methode 2 (gut fuer mehrere Modelle)
 #-------------------------------------------------------------------------------------------------------------------------------------------
-#'''
+'''
 eval = EvaluatePrequential(show_plot=True,
                            max_samples= 1000,
                            metrics=['accuracy', 'running_time', 'model_size', 'true_vs_predicted'],
@@ -233,7 +233,7 @@ eval = EvaluatePrequential(show_plot=True,
                            )
 
 eval.evaluate(stream=stream, model= model, model_names=['KNN'])
-#'''
+'''
 #-------------------------------------------------------------------------------------------------------------------------------------------
 
 # Stream als csv ausgeben
