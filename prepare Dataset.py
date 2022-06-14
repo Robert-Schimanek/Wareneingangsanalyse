@@ -19,9 +19,9 @@ df['Real PartNo'] = df['Real PartNo'].str.replace(" ","")
 df.drop(df.columns.difference(['Customer Number', 'Real PartNo', 'Delivery ID', 'Customer Delv No.', 'Product Group', 'Bar Code', 'Box exists', 'Box code scanable']), axis=1, inplace=True)
 print(df)
 
-# Spalten mit leeren Inhalten loeschen
-df.replace('', np.nan, inplace=True)
-df.dropna(inplace=True)
+# Zeilen mit leeren Real PartNo loeschen und leere Zeilen bei anderen Spalten mit 0 fuellen
+df.fillna(0, inplace=True)
+df['Real PartNo'].replace(0, np.nan, inplace = True)
 print(df)
 
 # Datein nach Real PartNo filtern <100 werden geloscht
@@ -41,5 +41,7 @@ exportX.to_csv('C:/Users/gezer/Desktop/Wareneingangsanalyse/DatasetX.csv', index
 exportY.to_csv('C:/Users/gezer/Desktop/Wareneingangsanalyse/DatasetY.csv', index=False)
 
 # Real PartNo zaehlen
-#dups = filtered.pivot_table(columns=['Real PartNo'], aggfunc='size')
-#dups.to_csv('C:/Users/gezer/Desktop/duplicates.csv', index=True)
+dups = exportY.pivot_table(columns=['Real PartNo'], aggfunc='size')
+dups = pd.DataFrame(dups)
+dups.to_csv('C:/Users/gezer/Desktop/Wareneingangsanalyse/duplicates.csv', index=True)
+print(dups)
