@@ -17,10 +17,10 @@ import seaborn as sns
 import pandas as pd
 import numpy as np
 import time
+from sklearn.naive_bayes import CategoricalNB
 
 
-# Einführung
-
+# Zeit starten
 start_time = time.time()
 
 # Datensatz laden
@@ -34,8 +34,6 @@ LE = preprocessing.LabelEncoder()
 # Datensatz Encoden
 datasetX = OE.fit_transform(datasetX)
 datasetY = datasetY.apply(LE.fit_transform)
-#datasetX2 = OE.fit_transform(datasetX2)
-#datasetY2 = datasetY2.apply(LE.fit_transform)
 
 # Datensatz in Dataframe umwandeln
 dfX = pd.DataFrame(datasetX)
@@ -59,37 +57,17 @@ NB = NaiveBayes()
 FR = AdaptiveRandomForestRegressor()
 LB = LeveragingBaggingClassifier()
 KNN = KNNClassifier()
-#SGD = SGDClassifier()
-#SGD.fit(datasetX,datasetY.values.ravel())
-#print(SGD.score(datasetX, datasetY))
+CLF = CategoricalNB()
+SGD = SGDClassifier()
 
-model = NB
-
+model = CLF
+model_names = ['EFDT']
 
 # BATCHLEARNING (IN ECHT AUCH INKREMENTELL ABER PSCHT)
-#-------------------------------------------------------------------------------------------------------------------------------------------
-#''' 
-# Variablen fuer die Iteration
-k=0
-n_samples = 0
-correct_cnt = 0
-max_samples = 10000
-i_pred= np.empty([max_samples], dtype=int);     #print(i_pred)
-i= np.empty([max_samples], dtype=int);          #print(i)
-
-# AI mithilfe des Streams trainieren
-while n_samples < max_samples and stream.has_more_samples():
-    X, y = stream.next_sample();                #print('y:',y);   #print(LE.inverse_transform('yt:',X)); 
-    y_pred = model.predict(X);                  #print(y_pred)
-    if y[0] == y_pred[0]:
-        correct_cnt += 1                        # Anzahl der richtigen Schaetzungen
-    if k % 100 == 0: 
-        print(n_samples, 'samples trained')
-    model.partial_fit(X, y)                     # Modell anpassen
-    i_pred[n_samples] = y_pred                  # Schaetzung Speichern
-    i[n_samples] = y                            # Anzahl der Iterationen
-    n_samples += 1;                             
-    k = k + 1 
+''''''#-------------------------------------------------------------------------------------------------------------------------------------------
+model.fit(dfX, dfY.values.ravel())
+print(model.score(dfX,dfY))
+#print(model.predict([[0, 0, 0, 0, 0, 0, 0]]))
 print('--------------------')
 #-------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -124,11 +102,9 @@ while IL_samples < IL_max_samples and stream.has_more_samples():
 #-------------------------------------------------------------------------------------------------------------------------------------------
 num_err = np.sum(y != model.predict(X))
 print('--------------------')
-print('{} samples trained.'.format(n_samples))                                      # BATCH samples analisiert
 print('{} samples tested.'.format(IL_samples))                          # IL samples analisiert
 print("Number of errors:", num_err)                                                 # Anzahl der Fehler
 print('--------------------')
-print('Median Accuracy training: {}'.format(correct_cnt / n_samples))               # BATCH Genauigkeit
 print('Median Accuracy IL testing: {}'.format(IL_correct_cnt / IL_samples))         # IL Genauigkeit
 c_pred = Counter(IL_pred);                                                          #print(c_pred);      #print(IL_pred)
 c_real = Counter(IL);                                                               #print(c_real);      #print(IL)
@@ -136,39 +112,7 @@ print("--- %s seconds ---" % (time.time() - start_time));                       
 #-------------------------------------------------------------------------------------------------------------------------------------------
 
 
-# Training Plotten
-#-------------------------------------------------------------------------------------------------------------------------------------------
-# Create dictionaries from lists with this format: 'letter':count
-dict1 = dict(zip(*np.unique(i_pred, return_counts=True)))
-dict2 = dict(zip(*np.unique(i, return_counts=True)))
-
-# Add missing letters with count=0 to each dictionary so that keys in
-# each dictionary are identical
-only_in_set1 = set(dict1)-set(dict2)
-only_in_set2 = set(dict2)-set(dict1)
-dict1.update(dict(zip(only_in_set2, [0]*len(only_in_set2))))
-dict2.update(dict(zip(only_in_set1, [0]*len(only_in_set1))))
-
-# Sort dictionaries alphabetically
-dict1 = dict(sorted(dict1.items()))
-dict2 = dict(sorted(dict2.items()))
-
-# Create grouped bar chart
-xticks = np.arange(len(dict1))
-bar_width = 0.3
-fig, ax = plt.subplots(figsize=(9, 5))
-ax.bar(xticks-bar_width/2, dict1.values(), bar_width,
-       color='blue', alpha=0.5, label='vorhergesagte RealPartNo')
-ax.bar(xticks+bar_width/2, dict2.values(), bar_width,
-       color='red', alpha=0.5, label='richtige RealPartNo')
-
-# Set annotations, x-axis ticks and tick labels
-ax.set_ylabel('Counts')
-ax.set_title('Real PartNo: Training analysis')
-ax.set_xticks(xticks)
-ax.set_xticklabels(dict1.keys())
-ax.legend(frameon=False)
-plt.show()
+# IL Plotten
 #-------------------------------------------------------------------------------------------------------------------------------------------
 # Create dictionaries from lists with this format: 'letter':count
 dict1 = dict(zip(*np.unique(IL_pred, return_counts=True)))
@@ -204,9 +148,27 @@ plt.show()
 #'''
 #-------------------------------------------------------------------------------------------------------------------------------------------
 
+
+# Methode 2 (gut fuer mehrere Modelle)
+#-------------------------------------------------------------------------------------------------------------------------------------------
 '''
+eval = EvaluatePrequential(show_plot=True,
+                           max_samples= 10000,
+                           metrics=['accuracy', 'running_time', 'model_size', 'true_vs_predicted'],
+                           output_file='output.csv',
+                           n_wait=50,
+                           pretrain_size=0,
+                           data_points_for_classification=True
+                           )
+
+eval.evaluate(stream=stream, model= model, model_names=model_names)
+'''
+#-------------------------------------------------------------------------------------------------------------------------------------------
+
+
 # Datensatz invertieren
 #-------------------------------------------------------------------------------------------------------------------------------------------
+'''
 X = i;  X_pred = i_pred;    #print(X)
 inv = LE.inverse_transform(X)
 inv_pred = LE.inverse_transform(X_pred)
@@ -217,26 +179,12 @@ inv_pred.rename(columns={0: 'pred. Real PartNo'}, inplace=True)
 invNo = pd.concat([inv_pred,inv], axis=1)
 invNo.to_csv('C:/Users/gezer/Desktop/results.csv', index = 0); #print(inv)
 #inv_pred.to_csv('C:/Users/gezer/Desktop/inv_pred.csv', index = 0); #print(inv_pred)
-#-------------------------------------------------------------------------------------------------------------------------------------------
 '''
+#-------------------------------------------------------------------------------------------------------------------------------------------
 
-# Methode 2 (gut fuer mehrere Modelle)
-#-------------------------------------------------------------------------------------------------------------------------------------------
-'''
-eval = EvaluatePrequential(show_plot=True,
-                           max_samples= 1000,
-                           metrics=['accuracy', 'running_time', 'model_size', 'true_vs_predicted'],
-                           output_file='output.csv',
-                           n_wait=50,
-                           pretrain_size=0,
-                           data_points_for_classification=True
-                           )
-
-eval.evaluate(stream=stream, model= model, model_names=['KNN'])
-'''
-#-------------------------------------------------------------------------------------------------------------------------------------------
 
 # Stream als csv ausgeben
+#-------------------------------------------------------------------------------------------------------------------------------------------
 '''
 stream = DataStream(dataframe, target_idx=7, allow_nan=True)
 X, y = stream.next_sample(5); 
@@ -245,3 +193,4 @@ df = pd.DataFrame(np.hstack((X, y.reshape(-1,1))),
 df.target = df.target.astype(int)
 df.to_csv('C:/Users/gezer/Desktop/streamlol.csv')
 '''
+#-------------------------------------------------------------------------------------------------------------------------------------------
