@@ -5,11 +5,11 @@ import pandas as pd
 
 
 #CSV Dateien einlesen
-dataset = load('C:/Users/gezer/Desktop/Python/tidydataframe.sav')
+dataset = load('C:/Users/gezer/Desktop/Wareneingangsanalyse/tidydataframe.sav')
 df = pd.DataFrame(dataset)
 newcolumn = pd.DataFrame(dataset)
-export = pd.read_csv('C:/Users/gezer/Desktop/export.csv')
-filter = pd.read_csv('C:/Users/gezer/Desktop/filter list.csv')
+export = pd.read_csv('https://raw.githubusercontent.com/Tenny131/Wareneingangsanalyse/main/export.csv')
+filter = pd.read_csv('https://raw.githubusercontent.com/Tenny131/Wareneingangsanalyse/main/filter%20list.csv')
 print(df); print(newcolumn)
 
 # Leerzeichen von Real PartNo entfernen
@@ -31,14 +31,12 @@ print(dfnew)
 
 
 # Datein nach Real PartNo filtern
-#'''
 list = filter['Real PartNo'].to_list();   #print(list)
 for i in list:
     filtered = dfnew.loc[(dfnew['Real PartNo'] == i)]; #print(k)
     export = pd.concat([export,filtered])
 export.drop(export.index[[0]], inplace=True)
 print(export)
-#'''
 
 # Duplikate entfernen
 #export = export.drop_duplicates(keep=False)
@@ -51,8 +49,8 @@ exportX = export.drop('Real PartNo', axis=1)
 exportY = export.drop(export.columns.difference(['Real PartNo']), axis=1)
 
 # Datensatz ausgeben 
-exportX.to_csv('C:/Users/gezer/Desktop/DatasetX.csv', index=False)
-exportY.to_csv('C:/Users/gezer/Desktop/DatasetY.csv', index=False)
+exportX.to_csv('C:/Users/gezer/Desktop/Wareneingangsanalyse/DatasetX.csv', index=False)
+exportY.to_csv('C:/Users/gezer/Desktop/Wareneingangsanalyse/DatasetY.csv', index=False)
 
 '''
 # Real PartNo zaehlen
