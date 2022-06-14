@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 
 #TODO: Datensatz muss noch nach Datum sortiert werden
-#TODO: Nur Spalten loeschen die bei RealPartNo leer sind
 
 #CSV Dateien einlesen
 dataset = load('C:/Users/gezer/Desktop/Wareneingangsanalyse/tidydataframe.sav')
