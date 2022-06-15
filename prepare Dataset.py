@@ -43,7 +43,6 @@ exportX.to_csv('C:/Users/gezer/Desktop/Wareneingangsanalyse/DatasetX.csv', index
 exportY.to_csv('C:/Users/gezer/Desktop/Wareneingangsanalyse/DatasetY.csv', index=False)
 
 # Real PartNo zaehlen
-dups = exportY.pivot_table(columns=['Real PartNo'], aggfunc='size')
-dups = pd.DataFrame(dups)
+dups =exportY['Real PartNo'].value_counts()
 dups.to_csv('C:/Users/gezer/Desktop/Wareneingangsanalyse/duplicates.csv', index=True)
 print(dups)
