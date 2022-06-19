@@ -10,12 +10,11 @@ dataset = load('C:/Users/gezer/Desktop/Wareneingangsanalyse/tidydataframe.sav')
 export = pd.read_csv('https://raw.githubusercontent.com/Tenny131/Wareneingangsanalyse/main/export.csv')
 filter = pd.read_csv('https://raw.githubusercontent.com/Tenny131/Wareneingangsanalyse/main/filter%20list.csv')
 df = pd.DataFrame(dataset)
-
 # Leerzeichen von Real PartNo entfernen
 df['Real PartNo'] = df['Real PartNo'].str.replace(" ","")
-
+df['Created'] =pd.to_datetime(df.Created)
 # Unwichtige Spalten loeschen und neue spalte importieren
-df.drop(df.columns.difference(['Customer Number', 'Real PartNo', 'Delivery ID', 'Customer Delv No.', 'Product Group', 'Bar Code', 'Box exists', 'Box code scanable']), axis=1, inplace=True)
+df.drop(df.columns.difference(['Customer Number', 'Real PartNo', 'Delivery ID', 'Customer Delv No.', 'Product Group', 'Bar Code', 'Box exists', 'Box code scanable', 'Created']), axis=1, inplace=True)
 print(df)
 
 # Zeilen mit leeren Real PartNo loeschen und leere Zeilen bei anderen Spalten mit 0 fuellen
@@ -31,8 +30,9 @@ for i in list:
 export.drop(export.index[[0]], inplace=True)
 print(export)
 
-# Datensatz durchmischen
-export = export.sample(frac=1)
+# Datensatz nach Datum sortieren
+export = export.sort_values(by='Created')
+export.drop(['Created'],axis=1, inplace=True)
 
 # Datensatz in X und Y Anteile aufteilen
 exportX = export.drop('Real PartNo', axis=1)
