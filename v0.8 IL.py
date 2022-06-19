@@ -34,6 +34,9 @@ LE = preprocessing.LabelEncoder()
 # Datensatz Encoden
 datasetX = OE.fit_transform(datasetX)
 datasetY = datasetY.apply(LE.fit_transform)
+#print('Ordinalkodiert\n',datasetX)
+#datasetX = pd.DataFrame(datasetX)
+#datasetX.to_csv('C:/Users/gezer/Desktop/kodiert.csv')
 
 # Datensatz in Dataframe umwandeln
 dfX = pd.DataFrame(datasetX)
@@ -60,18 +63,18 @@ KNN = KNNClassifier()
 CLF = CategoricalNB()
 SGD = SGDClassifier()
 
-model = CLF
+model = SGD
 model_names = ['EFDT']
 
 # BATCHLEARNING (IN ECHT AUCH INKREMENTELL ABER PSCHT)
-''''''#-------------------------------------------------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------------------------------------------------------------------
 model.fit(dfX, dfY.values.ravel())
 print(model.score(dfX,dfY))
-#print(model.predict([[0, 0, 0, 0, 0, 0, 0]]))
+print(model.predict([[0, 0, 0, 0, 0, 0, 0]]))
 print('--------------------')
 #-------------------------------------------------------------------------------------------------------------------------------------------
 
-
+#'''
 # INCREMENTAL LEARNING
 #-------------------------------------------------------------------------------------------------------------------------------------------
 # Variablen fuer die Iteration

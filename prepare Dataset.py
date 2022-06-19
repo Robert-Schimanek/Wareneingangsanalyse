@@ -12,14 +12,16 @@ filter = pd.read_csv('https://raw.githubusercontent.com/Tenny131/Wareneingangsan
 df = pd.DataFrame(dataset)
 # Leerzeichen von Real PartNo entfernen
 df['Real PartNo'] = df['Real PartNo'].str.replace(" ","")
-df['Created'] =pd.to_datetime(df.Created)
+#df['Created'] =pd.to_datetime(df.Created)
 # Unwichtige Spalten loeschen und neue spalte importieren
-df.drop(df.columns.difference(['Customer Number', 'Real PartNo', 'Delivery ID', 'Customer Delv No.', 'Product Group', 'Bar Code', 'Box exists', 'Box code scanable', 'Created']), axis=1, inplace=True)
+df.drop(df.columns.difference(['Customer Number', 'Real PartNo', 'Delivery ID', 'Customer Delv No.', 'Product Group', 'Bar Code', 'Box exists', 'Box code scanable', 'Box code', 'Box number selected', 'CBN', 'Effective Reman']), axis=1, inplace=True)
 print(df)
 
 # Zeilen mit leeren Real PartNo loeschen und leere Zeilen bei anderen Spalten mit 0 fuellen
-df.fillna(0, inplace=True)
-df['Real PartNo'].replace(0, np.nan, inplace = True)
+#df.fillna(0, inplace=True)
+#df['Real PartNo'].replace(0, np.nan, inplace = True)
+df.replace('', np.nan, inplace=True)
+df.dropna(inplace=True)
 print(df)
 
 # Datein nach Real PartNo filtern <100 werden geloscht
@@ -31,13 +33,16 @@ export.drop(export.index[[0]], inplace=True)
 print(export)
 
 # Datensatz nach Datum sortieren
-export = export.sort_values(by='Created')
-export.drop(['Created'],axis=1, inplace=True)
+#export = export.sort_values(by='Created')
+#export.drop(['Created'],axis=1, inplace=True)
+
+export = export.sample(frac=1)
 
 # Datensatz in X und Y Anteile aufteilen
 exportX = export.drop('Real PartNo', axis=1)
 exportY = export.drop(export.columns.difference(['Real PartNo']), axis=1)
-
+print(exportX)
+print(exportY)
 # Datensatz ausgeben 
 exportX.to_csv('C:/Users/gezer/Desktop/Wareneingangsanalyse/DatasetX.csv', index=False)
 exportY.to_csv('C:/Users/gezer/Desktop/Wareneingangsanalyse/DatasetY.csv', index=False)
