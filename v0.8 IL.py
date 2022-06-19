@@ -2,26 +2,31 @@
 from tkinter import S
 from skmultiflow.trees import ExtremelyFastDecisionTreeClassifier, HoeffdingAdaptiveTreeClassifier, HoeffdingTreeClassifier
 from skmultiflow.meta import AdaptiveRandomForestRegressor, LeveragingBaggingClassifier
-from skmultiflow.data import SEAGenerator, AGRAWALGenerator, DataStream
-from skmultiflow.transform.missing_values_cleaner import MissingValuesCleaner
-from skmultiflow.evaluation import EvaluatePrequential
+from skmultiflow.data import DataStream
 from skmultiflow.bayes import NaiveBayes
 from skmultiflow.lazy import KNNClassifier
 # Importiere von Sklearn
+from sklearn import tree
 from sklearn import preprocessing
 from sklearn.linear_model import SGDClassifier
+from sklearn.naive_bayes import CategoricalNB
+from sklearn.naive_bayes import BernoulliNB
+from sklearn.naive_bayes import GaussianNB, MultinomialNB 
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.tree import DecisionTreeClassifier
 # Importiere von Andere
+from incremental_trees.models.classification.streaming_rfc import StreamingRFC
 import matplotlib.pyplot as plt
 from collections import Counter
 import seaborn as sns
 import pandas as pd
 import numpy as np
 import time
-from sklearn.naive_bayes import CategoricalNB
+import warnings
 
-
-# Zeit starten
+# Zeit starten und warnings ausschalten weil alte Funktionen genutzt werden
 start_time = time.time()
+warnings.filterwarnings("ignore")
 
 # Datensatz laden
 datasetX = pd.read_csv('C:/Users/gezer/Desktop/Wareneingangsanalyse/DatasetX.csv', low_memory=False); #print(datasetX.head(10));  print(datasetX.dtypes)
@@ -34,9 +39,6 @@ LE = preprocessing.LabelEncoder()
 # Datensatz Encoden
 datasetX = OE.fit_transform(datasetX)
 datasetY = datasetY.apply(LE.fit_transform)
-#print('Ordinalkodiert\n',datasetX)
-#datasetX = pd.DataFrame(datasetX)
-#datasetX.to_csv('C:/Users/gezer/Desktop/kodiert.csv')
 
 # Datensatz in Dataframe umwandeln
 dfX = pd.DataFrame(datasetX)
@@ -49,10 +51,7 @@ dataframe.to_csv('C:/Users/gezer/Desktop/neu.csv', index = 0)
 # Datenframe in ein Stream umwandeln
 stream=DataStream(dataframe, target_idx=7)
 
-# Fehlende informationen mit '0' fuellen
-#cleaner = MissingValuesCleaner(0)
-
-# Extremely Fast Decision Tree classifier Methode initialisieren
+# Modelle importieren
 EFDT = ExtremelyFastDecisionTreeClassifier()
 HAT = HoeffdingAdaptiveTreeClassifier()
 HT = HoeffdingTreeClassifier()
@@ -60,17 +59,23 @@ NB = NaiveBayes()
 FR = AdaptiveRandomForestRegressor()
 LB = LeveragingBaggingClassifier()
 KNN = KNNClassifier()
-CLF = CategoricalNB()
+CNB = CategoricalNB()
 SGD = SGDClassifier()
+BNB = BernoulliNB()
+MNB = MultinomialNB()
+GNB = GaussianNB()
+CLF = tree.DecisionTreeClassifier()
+SRFC = StreamingRFC(DecisionTreeClassifier(random_state=0))
 
-model = SGD
-model_names = ['EFDT']
+model = SRFC
+model_names = ['DTC']
 
 # BATCHLEARNING (IN ECHT AUCH INKREMENTELL ABER PSCHT)
 #-------------------------------------------------------------------------------------------------------------------------------------------
+print('Batchlearning Modell: ', model_names)
 model.fit(dfX, dfY.values.ravel())
-print(model.score(dfX,dfY))
-print(model.predict([[0, 0, 0, 0, 0, 0, 0]]))
+print('Genauigkeit:', model.score(dfX,dfY))
+#print(model.predict([[0, 0, 0, 0, 0, 0, 0]]))
 print('--------------------')
 #-------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -81,7 +86,7 @@ print('--------------------')
 k=0
 IL_samples = 0
 IL_correct_cnt = 0
-IL_max_samples = 1000
+IL_max_samples = 10000
 IL_pred = np.empty([IL_max_samples], dtype=int)
 IL = np.empty([IL_max_samples], dtype=int)
 
@@ -91,7 +96,7 @@ while IL_samples < IL_max_samples and stream.has_more_samples():
     y_pred = model.predict(X);                  #print(y_pred)
     if y[0] == y_pred[0]:
         IL_correct_cnt += 1                     # Anzahl der richtigen Schaetzungen
-    if k % 100 == 0: 
+    if k % 500 == 0: 
         print(IL_samples, 'samples tested')
     model.partial_fit(X, y)
     IL_pred[IL_samples] = y_pred                # Schaetzung Speichern
@@ -103,9 +108,10 @@ while IL_samples < IL_max_samples and stream.has_more_samples():
 
 # Ergebnisse ausgeben
 #-------------------------------------------------------------------------------------------------------------------------------------------
+print('Ergebnisse IL Modell: ', model_names)
 num_err = np.sum(y != model.predict(X))
 print('--------------------')
-print('{} samples tested.'.format(IL_samples))                          # IL samples analisiert
+print('{} samples tested.'.format(IL_samples))                                      # IL samples analisiert
 print("Number of errors:", num_err)                                                 # Anzahl der Fehler
 print('--------------------')
 print('Median Accuracy IL testing: {}'.format(IL_correct_cnt / IL_samples))         # IL Genauigkeit
@@ -156,7 +162,7 @@ plt.show()
 #-------------------------------------------------------------------------------------------------------------------------------------------
 '''
 eval = EvaluatePrequential(show_plot=True,
-                           max_samples= 10000,
+                           max_samples= 1000,
                            metrics=['accuracy', 'running_time', 'model_size', 'true_vs_predicted'],
                            output_file='output.csv',
                            n_wait=50,
