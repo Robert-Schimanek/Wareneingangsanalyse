@@ -6,3 +6,4 @@ DatasetX.csv
 DatasetY.csv
 duplicates.csv
 output.csv
+*.csv

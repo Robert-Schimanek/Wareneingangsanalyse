@@ -5,6 +5,7 @@ from skmultiflow.meta import AdaptiveRandomForestRegressor, LeveragingBaggingCla
 from skmultiflow.data import DataStream
 from skmultiflow.bayes import NaiveBayes
 from skmultiflow.lazy import KNNClassifier
+from skmultiflow.evaluation import EvaluatePrequential
 # Importiere von Sklearn
 from sklearn import tree
 from sklearn import preprocessing
@@ -29,8 +30,8 @@ start_time = time.time()
 warnings.filterwarnings("ignore")
 
 # Datensatz laden
-datasetX = pd.read_csv('C:/Users/gezer/Desktop/Wareneingangsanalyse/DatasetX.csv', low_memory=False); #print(datasetX.head(10));  print(datasetX.dtypes)
-datasetY = pd.read_csv('C:/Users/gezer/Desktop/Wareneingangsanalyse/DatasetY.csv', low_memory=False); #print(datasetY.head(10));  print(datasetY.dtypes)
+datasetX = pd.read_csv('DatasetX.csv', low_memory=False); #print(datasetX.head(10));  print(datasetX.dtypes)
+datasetY = pd.read_csv('DatasetY.csv', low_memory=False); #print(datasetY.head(10));  print(datasetY.dtypes)
 
 # Encoder initialisieren
 OE = preprocessing.OrdinalEncoder()
@@ -46,7 +47,7 @@ dfY = pd.DataFrame(datasetY)
 
 # Ein und Ausgabewerte zusammenfassen
 dataframe = pd.concat([dfX,dfY], axis=1)
-dataframe.to_csv('C:/Users/gezer/Desktop/neu.csv', index = 0)
+dataframe.to_csv('neu.csv', index = 0)
 
 # Datenframe in ein Stream umwandeln
 stream=DataStream(dataframe, target_idx=7)
@@ -65,7 +66,7 @@ BNB = BernoulliNB()
 MNB = MultinomialNB()
 GNB = GaussianNB()
 CLF = tree.DecisionTreeClassifier()
-SRFC = StreamingRFC(DecisionTreeClassifier(random_state=0))
+SRFC = StreamingRFC()
 
 model = SRFC
 model_names = ['DTC']
@@ -86,7 +87,7 @@ print('--------------------')
 k=0
 IL_samples = 0
 IL_correct_cnt = 0
-IL_max_samples = 10000
+IL_max_samples = 65000
 IL_pred = np.empty([IL_max_samples], dtype=int)
 IL = np.empty([IL_max_samples], dtype=int)
 
@@ -162,10 +163,10 @@ plt.show()
 #-------------------------------------------------------------------------------------------------------------------------------------------
 '''
 eval = EvaluatePrequential(show_plot=True,
-                           max_samples= 1000,
+                           max_samples= 65000,
                            metrics=['accuracy', 'running_time', 'model_size', 'true_vs_predicted'],
                            output_file='output.csv',
-                           n_wait=50,
+                           n_wait=500,
                            pretrain_size=0,
                            data_points_for_classification=True
                            )
